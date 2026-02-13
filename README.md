@@ -70,3 +70,7 @@ US Letter (8.5 x 11 inches). Panels for half/quarter layouts include dashed fold
 ## License
 
 MIT
+
+## AI Disclosure
+
+Claude Opus 4.6 was used to create the code and README.md files within this repository.
