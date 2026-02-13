@@ -5,8 +5,11 @@ Supports square grids, hexagonal grids, lined writing paper, and isometric grids
 Pages can fill the whole sheet or be split into panels for folding/cutting.
 """
 import argparse
+import ctypes.util
 import math
 import os
+import subprocess
+import sys
 import svg
 
 
@@ -40,6 +43,28 @@ def draw_grid(w: float, h: float, size: float, line_width: float, color: str) ->
     while y <= ph + 0.01:
         elements.append(svg.Line(x1=0, y1=y, x2=pw, y2=y, stroke=color, stroke_width=sw))
         y += step
+
+    return elements
+
+
+def draw_dots(w: float, h: float, size: float, line_width: float, color: str) -> list:
+    """Draw a dot grid pattern within w x h area (all values in mm).
+
+    Dots are placed at every grid intersection. The line_width parameter
+    controls the dot diameter.
+    """
+    elements = []
+    step = mm(size)
+    r = mm(line_width) / 2  # line_width as dot diameter, so radius is half
+    pw, ph = mm(w), mm(h)
+
+    x = 0.0
+    while x <= pw + 0.01:
+        y = 0.0
+        while y <= ph + 0.01:
+            elements.append(svg.Circle(cx=x, cy=y, r=r, fill=color))
+            y += step
+        x += step
 
     return elements
 
@@ -144,6 +169,7 @@ def draw_iso(w: float, h: float, size: float, line_width: float, color: str) -> 
 
 DRAW_FNS = {
     "grid": draw_grid,
+    "dots": draw_dots,
     "hex": draw_hex,
     "lined": draw_lined,
     "iso": draw_iso,
@@ -276,12 +302,67 @@ def make_page(args) -> svg.SVG:
     )
 
 
+def _ensure_cairo_lib() -> None:
+    """Ensure the cairo shared library is discoverable by cairocffi.
+
+    When running inside an isolated venv (e.g. created by uv), system
+    libraries installed via Homebrew or conda may not be on the default
+    search path. This probes common locations and updates DYLD_LIBRARY_PATH
+    before cairocffi is imported.
+    """
+    # If ctypes can already find it, nothing to do
+    if ctypes.util.find_library("cairo"):
+        return
+
+    search_dirs = []
+
+    # Homebrew (macOS)
+    try:
+        prefix = subprocess.check_output(
+            ["brew", "--prefix", "cairo"], stderr=subprocess.DEVNULL, text=True,
+        ).strip()
+        search_dirs.append(os.path.join(prefix, "lib"))
+    except (FileNotFoundError, subprocess.CalledProcessError):
+        pass
+
+    # Common Homebrew lib paths
+    for d in ["/opt/homebrew/lib", "/usr/local/lib"]:
+        if d not in search_dirs:
+            search_dirs.append(d)
+
+    # Conda
+    conda_prefix = os.environ.get("CONDA_PREFIX")
+    if conda_prefix:
+        search_dirs.append(os.path.join(conda_prefix, "lib"))
+    # Also check base miniconda/anaconda locations
+    home = os.path.expanduser("~")
+    for name in ["miniconda3", "miniforge3", "anaconda3"]:
+        d = os.path.join(home, name, "lib")
+        if d not in search_dirs:
+            search_dirs.append(d)
+
+    # Probe for the library
+    lib_names = ["libcairo.2.dylib", "libcairo.dylib", "libcairo.so.2", "libcairo.so"]
+    for d in search_dirs:
+        for lib in lib_names:
+            if os.path.isfile(os.path.join(d, lib)):
+                existing = os.environ.get("DYLD_LIBRARY_PATH", "")
+                if d not in existing:
+                    os.environ["DYLD_LIBRARY_PATH"] = f"{d}:{existing}" if existing else d
+                return
+
+    raise OSError(
+        "libcairo was not found in any standard location. "
+        "Searched: " + ", ".join(search_dirs)
+    )
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Generate printable grid/line paper SVGs for book binding.",
     )
     parser.add_argument(
-        "--type", choices=["grid", "hex", "lined", "iso"], default="grid",
+        "--type", choices=["grid", "dots", "hex", "lined", "iso"], default="grid",
         help="Grid pattern type (default: grid)",
     )
     parser.add_argument(
@@ -325,9 +406,14 @@ def main():
     _, ext = os.path.splitext(args.output)
     if ext.lower() == ".pdf":
         try:
+            _ensure_cairo_lib()
             import cairosvg
         except ImportError:
             print("Error: PDF output requires cairosvg. Install it with: pip install cairosvg")
+            raise SystemExit(1)
+        except OSError as e:
+            print(f"Error: cairo system library not found. {e}")
+            print("Install it with: brew install cairo")
             raise SystemExit(1)
         cairosvg.svg2pdf(bytestring=svg_str.encode("utf-8"), write_to=args.output)
     else:

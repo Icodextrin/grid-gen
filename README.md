@@ -4,7 +4,7 @@ A CLI tool for generating printable grid and line paper as SVG or PDF files, des
 
 ## Features
 
-- **Grid types**: square grid, hexagonal grid, lined writing paper, isometric grid
+- **Grid types**: square grid, dot grid, hexagonal grid, lined writing paper, isometric grid
 - **Page layouts**: full page, half (2 panels for folding), quarter (4 panels for folding)
 - **Orientation**: portrait or landscape
 - **Output formats**: SVG and PDF
@@ -34,6 +34,9 @@ grid-gen -o graph.svg
 # 7mm lined writing paper in light blue
 grid-gen --type lined --size 7 --color "#9999cc" -o lined.pdf
 
+# Dot grid (line-width controls dot size)
+grid-gen --type dots --size 5 --line-width 0.8 -o dots.svg
+
 # Hexagonal grid, 8mm hexes
 grid-gen --type hex --size 8 -o hex.svg
 
@@ -54,9 +57,9 @@ grid-gen --type lined --layout quarter --orientation landscape -o quarter.pdf
 
 | Flag | Default | Description |
 |------|---------|-------------|
-| `--type` | `grid` | `grid`, `hex`, `lined`, or `iso` |
+| `--type` | `grid` | `grid`, `dots`, `hex`, `lined`, or `iso` |
 | `--size` | `5` | Grid spacing in mm |
-| `--line-width` | `0.3` | Line width in mm |
+| `--line-width` | `0.3` | Line width in mm (dot diameter for `dots`) |
 | `--color` | `#cccccc` | Line color (CSS color or hex value) |
 | `--orientation` | `portrait` | `portrait` or `landscape` |
 | `--layout` | `full` | `full`, `half`, or `quarter` |
