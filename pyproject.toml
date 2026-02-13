@@ -1,0 +1,22 @@
+[project]
+name = "grid-gen"
+version = "0.1.0"
+description = "Generate printable grid and line paper SVGs/PDFs for book binding"
+readme = "README.md"
+requires-python = ">=3.9"
+license = "MIT"
+dependencies = [
+    "svg.py>=1.4",
+]
+
+[project.optional-dependencies]
+pdf = [
+    "cairosvg>=2.7",
+]
+
+[project.scripts]
+grid-gen = "grid_gen:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
