@@ -282,17 +282,18 @@ def make_page(args) -> svg.SVG:
             )
         # Vertical fold line at center
         cx = page_w / 2
-        fold_lines.append(
-            svg.Line(
-                x1=cx,
-                y1=0,
-                x2=cx,
-                y2=page_h,
-                stroke=fold_color,
-                stroke_width=fold_width,
-                stroke_dasharray=fold_dash,
+        if args.fold_line:
+            fold_lines.append(
+                svg.Line(
+                    x1=cx,
+                    y1=0,
+                    x2=cx,
+                    y2=page_h,
+                    stroke=fold_color,
+                    stroke_width=fold_width,
+                    stroke_dasharray=fold_dash,
+                )
             )
-        )
 
     elif args.layout == "quarter":
         half_w = page_w_mm / 2
@@ -314,24 +315,33 @@ def make_page(args) -> svg.SVG:
                     f"clip-{i}",
                 )
             )
-        #        # Vertical fold line
-        #        cx = page_w / 2
-        #        fold_lines.append(
-        #            svg.Line(
-        #                x1=cx, y1=0, x2=cx, y2=page_h,
-        #                stroke=fold_color, stroke_width=fold_width,
-        #                stroke_dasharray=fold_dash,
-        #            )
-        #        )
-        #        # Horizontal fold line
-        #        cy = page_h / 2
-        #        fold_lines.append(
-        #            svg.Line(
-        #                x1=0, y1=cy, x2=page_w, y2=cy,
-        #                stroke=fold_color, stroke_width=fold_width,
-        #                stroke_dasharray=fold_dash,
-        #            )
-        #        )
+            if args.fold_line:
+                # Vertical fold line
+                cx = page_w / 2
+                fold_lines.append(
+                    svg.Line(
+                        x1=cx,
+                        y1=0,
+                        x2=cx,
+                        y2=page_h,
+                        stroke=fold_color,
+                        stroke_width=fold_width,
+                        stroke_dasharray=fold_dash,
+                    )
+                )
+                # Horizontal fold line
+                cy = page_h / 2
+                fold_lines.append(
+                    svg.Line(
+                        x1=0,
+                        y1=cy,
+                        x2=page_w,
+                        y2=cy,
+                        stroke=fold_color,
+                        stroke_width=fold_width,
+                        stroke_dasharray=fold_dash,
+                    )
+                )
 
     elements.extend(fold_lines)
 
@@ -426,8 +436,8 @@ def main():
     )
     parser.add_argument(
         "--color",
-        default="#cccccc",
-        help="Line color as CSS color (default: #cccccc)",
+        default="#d3d3d3",
+        help="Line color as hex color (default: #d3d3d3)",
     )
     parser.add_argument(
         "--orientation",
@@ -440,6 +450,12 @@ def main():
         choices=["full", "half", "quarter"],
         default="full",
         help="Page layout: full page, half (2 panels), or quarter (4 panels) (default: full)",
+    )
+    parser.add_argument(
+        "--fold-line",
+        type=bool,
+        action=argparse.BooleanOptionalAction,
+        help="Fold mark line (default: false)",
     )
     parser.add_argument(
         "--margin",
