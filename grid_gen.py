@@ -4,6 +4,7 @@
 Supports square grids, hexagonal grids, lined writing paper, and isometric grids.
 Pages can fill the whole sheet or be split into panels for folding/cutting.
 """
+
 import argparse
 import ctypes.util
 import math
@@ -35,13 +36,17 @@ def draw_grid(w: float, h: float, size: float, line_width: float, color: str) ->
     # Vertical lines
     x = 0.0
     while x <= pw + 0.01:
-        elements.append(svg.Line(x1=x, y1=0, x2=x, y2=ph, stroke=color, stroke_width=sw))
+        elements.append(
+            svg.Line(x1=x, y1=0, x2=x, y2=ph, stroke=color, stroke_width=sw)
+        )
         x += step
 
     # Horizontal lines
     y = 0.0
     while y <= ph + 0.01:
-        elements.append(svg.Line(x1=0, y1=y, x2=pw, y2=y, stroke=color, stroke_width=sw))
+        elements.append(
+            svg.Line(x1=0, y1=y, x2=pw, y2=y, stroke=color, stroke_width=sw)
+        )
         y += step
 
     return elements
@@ -78,7 +83,9 @@ def draw_lined(w: float, h: float, size: float, line_width: float, color: str) -
 
     y = step  # start one line-height down
     while y <= ph + 0.01:
-        elements.append(svg.Line(x1=0, y1=y, x2=pw, y2=y, stroke=color, stroke_width=sw))
+        elements.append(
+            svg.Line(x1=0, y1=y, x2=pw, y2=y, stroke=color, stroke_width=sw)
+        )
         y += step
 
     return elements
@@ -94,7 +101,7 @@ def draw_hex(w: float, h: float, size: float, line_width: float, color: str) -> 
     pw, ph = mm(w), mm(h)
 
     # Flat-top hex geometry
-    hex_w = s * 2          # width of one hex
+    hex_w = s * 2  # width of one hex
     hex_h = s * math.sqrt(3)  # height of one hex
     col_step = hex_w * 0.75
     row_step = hex_h
@@ -139,7 +146,9 @@ def draw_iso(w: float, h: float, size: float, line_width: float, color: str) -> 
     # Horizontal lines
     y = 0.0
     while y <= ph + 0.01:
-        elements.append(svg.Line(x1=0, y1=y, x2=pw, y2=y, stroke=color, stroke_width=sw))
+        elements.append(
+            svg.Line(x1=0, y1=y, x2=pw, y2=y, stroke=color, stroke_width=sw)
+        )
         y += spacing
 
     # Lines at +60 degrees (rising to upper-right)
@@ -153,7 +162,9 @@ def draw_iso(w: float, h: float, size: float, line_width: float, color: str) -> 
     while x <= pw:
         x1, y1 = x, ph
         x2, y2 = x + ph / dy_per_dx, 0.0
-        elements.append(svg.Line(x1=x1, y1=y1, x2=x2, y2=y2, stroke=color, stroke_width=sw))
+        elements.append(
+            svg.Line(x1=x1, y1=y1, x2=x2, y2=y2, stroke=color, stroke_width=sw)
+        )
         x += dx
 
     # Lines at -60 degrees (falling to lower-right)
@@ -161,7 +172,9 @@ def draw_iso(w: float, h: float, size: float, line_width: float, color: str) -> 
     while x <= pw:
         x1, y1 = x, 0.0
         x2, y2 = x + ph / dy_per_dx, ph
-        elements.append(svg.Line(x1=x1, y1=y1, x2=x2, y2=y2, stroke=color, stroke_width=sw))
+        elements.append(
+            svg.Line(x1=x1, y1=y1, x2=x2, y2=y2, stroke=color, stroke_width=sw)
+        )
         x += dx
 
     return elements
@@ -236,8 +249,16 @@ def make_page(args) -> svg.SVG:
     if args.layout == "full":
         elements.extend(
             make_panel(
-                draw_fn, page_w_mm, page_h_mm, 0, 0,
-                args.margin, args.size, args.line_width, args.color, "clip-0",
+                draw_fn,
+                page_w_mm,
+                page_h_mm,
+                0,
+                0,
+                args.margin,
+                args.size,
+                args.line_width,
+                args.color,
+                "clip-0",
             )
         )
 
@@ -247,16 +268,28 @@ def make_page(args) -> svg.SVG:
             ox = mm(half_w) * i
             elements.extend(
                 make_panel(
-                    draw_fn, half_w, page_h_mm, ox, 0,
-                    args.margin, args.size, args.line_width, args.color, f"clip-{i}",
+                    draw_fn,
+                    half_w,
+                    page_h_mm,
+                    ox,
+                    0,
+                    args.margin,
+                    args.size,
+                    args.line_width,
+                    args.color,
+                    f"clip-{i}",
                 )
             )
         # Vertical fold line at center
         cx = page_w / 2
         fold_lines.append(
             svg.Line(
-                x1=cx, y1=0, x2=cx, y2=page_h,
-                stroke=fold_color, stroke_width=fold_width,
+                x1=cx,
+                y1=0,
+                x2=cx,
+                y2=page_h,
+                stroke=fold_color,
+                stroke_width=fold_width,
                 stroke_dasharray=fold_dash,
             )
         )
@@ -269,28 +302,36 @@ def make_page(args) -> svg.SVG:
             oy = mm(half_h) * row
             elements.extend(
                 make_panel(
-                    draw_fn, half_w, half_h, ox, oy,
-                    args.margin, args.size, args.line_width, args.color, f"clip-{i}",
+                    draw_fn,
+                    half_w,
+                    half_h,
+                    ox,
+                    oy,
+                    args.margin,
+                    args.size,
+                    args.line_width,
+                    args.color,
+                    f"clip-{i}",
                 )
             )
-        # Vertical fold line
-        cx = page_w / 2
-        fold_lines.append(
-            svg.Line(
-                x1=cx, y1=0, x2=cx, y2=page_h,
-                stroke=fold_color, stroke_width=fold_width,
-                stroke_dasharray=fold_dash,
-            )
-        )
-        # Horizontal fold line
-        cy = page_h / 2
-        fold_lines.append(
-            svg.Line(
-                x1=0, y1=cy, x2=page_w, y2=cy,
-                stroke=fold_color, stroke_width=fold_width,
-                stroke_dasharray=fold_dash,
-            )
-        )
+        #        # Vertical fold line
+        #        cx = page_w / 2
+        #        fold_lines.append(
+        #            svg.Line(
+        #                x1=cx, y1=0, x2=cx, y2=page_h,
+        #                stroke=fold_color, stroke_width=fold_width,
+        #                stroke_dasharray=fold_dash,
+        #            )
+        #        )
+        #        # Horizontal fold line
+        #        cy = page_h / 2
+        #        fold_lines.append(
+        #            svg.Line(
+        #                x1=0, y1=cy, x2=page_w, y2=cy,
+        #                stroke=fold_color, stroke_width=fold_width,
+        #                stroke_dasharray=fold_dash,
+        #            )
+        #        )
 
     elements.extend(fold_lines)
 
@@ -319,7 +360,9 @@ def _ensure_cairo_lib() -> None:
     # Homebrew (macOS)
     try:
         prefix = subprocess.check_output(
-            ["brew", "--prefix", "cairo"], stderr=subprocess.DEVNULL, text=True,
+            ["brew", "--prefix", "cairo"],
+            stderr=subprocess.DEVNULL,
+            text=True,
         ).strip()
         search_dirs.append(os.path.join(prefix, "lib"))
     except (FileNotFoundError, subprocess.CalledProcessError):
@@ -348,7 +391,9 @@ def _ensure_cairo_lib() -> None:
             if os.path.isfile(os.path.join(d, lib)):
                 existing = os.environ.get("DYLD_LIBRARY_PATH", "")
                 if d not in existing:
-                    os.environ["DYLD_LIBRARY_PATH"] = f"{d}:{existing}" if existing else d
+                    os.environ["DYLD_LIBRARY_PATH"] = (
+                        f"{d}:{existing}" if existing else d
+                    )
                 return
 
     raise OSError(
@@ -362,42 +407,61 @@ def main():
         description="Generate printable grid/line paper SVGs for book binding.",
     )
     parser.add_argument(
-        "--type", choices=["grid", "dots", "hex", "lined", "iso"], default="grid",
+        "--type",
+        choices=["grid", "dots", "hex", "lined", "iso"],
+        default="grid",
         help="Grid pattern type (default: grid)",
     )
     parser.add_argument(
-        "--size", type=float, default=5.0,
+        "--size",
+        type=float,
+        default=5.0,
         help="Grid spacing in mm (default: 5)",
     )
     parser.add_argument(
-        "--line-width", type=float, default=0.3,
+        "--line-width",
+        type=float,
+        default=0.3,
         help="Line width in mm (default: 0.3)",
     )
     parser.add_argument(
-        "--color", default="#cccccc",
+        "--color",
+        default="#cccccc",
         help="Line color as CSS color (default: #cccccc)",
     )
     parser.add_argument(
-        "--orientation", choices=["portrait", "landscape"], default="portrait",
+        "--orientation",
+        choices=["portrait", "landscape"],
+        default="portrait",
         help="Page orientation (default: portrait)",
     )
     parser.add_argument(
-        "--layout", choices=["full", "half", "quarter"], default="full",
+        "--layout",
+        choices=["full", "half", "quarter"],
+        default="full",
         help="Page layout: full page, half (2 panels), or quarter (4 panels) (default: full)",
     )
     parser.add_argument(
-        "--margin", type=float, default=10.0,
+        "--margin",
+        type=float,
+        default=10.0,
         help="Margin around each panel in mm (default: 10)",
     )
     parser.add_argument(
-        "-o", "--output", default="output.svg",
+        "-o",
+        "--output",
+        default="output.svg",
         help="Output file path; use .pdf extension for PDF output (default: output.svg)",
     )
     args = parser.parse_args()
 
     # Normalize bare hex color values (e.g. "b3b3b3" -> "#b3b3b3")
     c = args.color
-    if not c.startswith("#") and all(ch in "0123456789abcdefABCDEF" for ch in c) and len(c) in (3, 6, 8):
+    if (
+        not c.startswith("#")
+        and all(ch in "0123456789abcdefABCDEF" for ch in c)
+        and len(c) in (3, 6, 8)
+    ):
         args.color = "#" + c
 
     page = make_page(args)
@@ -409,7 +473,9 @@ def main():
             _ensure_cairo_lib()
             import cairosvg
         except ImportError:
-            print("Error: PDF output requires cairosvg. Install it with: pip install cairosvg")
+            print(
+                "Error: PDF output requires cairosvg. Install it with: pip install cairosvg"
+            )
             raise SystemExit(1)
         except OSError as e:
             print(f"Error: cairo system library not found. {e}")
