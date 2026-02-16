@@ -453,8 +453,7 @@ def main():
     )
     parser.add_argument(
         "--fold-line",
-        type=bool,
-        action=argparse.BooleanOptionalAction,
+        action="store_true",
         help="Fold mark line (default: false)",
     )
     parser.add_argument(
